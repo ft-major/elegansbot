@@ -504,13 +504,13 @@ class Worm:
         import numpy as np
 
         fps = 30
-        kymogram = np.zeros((fps*5, 24))
-        for i in range(kymogram.shape[0]):
+        Kymogram = np.zeros((fps*5, 24))
+        for i in range(Kymogram.shape[0]):
             t = (1/fps) * i
-            kymogram[i] = 0.5 * np.cos(2 * np.pi * (1.832 * np.linspace(0, 1, 24) - t / 1.6))
+            Kymogram[i] = 0.5 * np.cos(2 * np.pi * (1.832 * np.linspace(0, 1, 24) - t / 1.6))
 
         env = Worm(scale_friction=0.01)
-        env.run(kymogram, 1/fps)
+        env.run(Kymogram, 1/fps)
 
         env.plot_overview()
         env.plot_speed_graph()
@@ -775,16 +775,16 @@ class Worm:
 
     def run(self, kymogram, dt, theta_init=None):
         """
-        Running whole simulation from a kymogram.
+        Running whole simulation from a Kymogram.
 
-        Keep in mind that dt should be the same value as time-step of kymogram.
+        Keep in mind that dt should be the same value as time-step of Kymogram.
         (If the FPS(frame per second) is 30, then dt=(1/30).)
 
 
         Parameters
         ----------
         kymogram : Kymogram with the first dimension as the time dimension. [np.array(dtype=float)]
-        dt : Time-step between each snapshot of input kymogram. (sec) [float]
+        dt : Time-step between each snapshot of input Kymogram. (sec) [float]
         theta_init : theta of first snapshot. [np.array(dtype=float)] (Default: None)
         """
         self.reset()
@@ -1187,22 +1187,22 @@ class Worm:
 # Demo
 if __name__ == '__main__':
     print('Agar plate')
-    env = Worm(dt=0.00005) # Numba JIT spends compile-time here, once.
+    env = Worm(simTime=10, dt=0.00005) # Numba JIT spends compile-time here, once.
     for _ in range(env.n_snapshot):
         env.act = 0.7 * np.cos(2 * np.pi * (1.832 * np.linspace(0, 1, env.n - 1) - env.t / 1.6))
         env.steps()
-    env.plot_overview()
-    env.plot_speed_graph()
+    # env.plot_overview()
+    # env.plot_speed_graph()
     env.play_animation()
-#     env.save_animation('demo_crawl.mp4')
+    # env.save_animation('demo_crawl.mp4')
     
-    print('Water')
-    env = Worm(dt=0.00005, bT=5.2e3, bII=5.2e3/1.5) # You can calculate faster with less accurate result by increasing dt.
-    for _ in range(env.n_snapshot):
-        env.act = 0.5 * np.cos(2 * np.pi * (0.667 * np.linspace(0, 1, env.n - 1) - env.t / 0.4))
-        env.steps()
-    env.plot_overview()
-    env.plot_speed_graph()
-    env.play_animation()
-#     env.save_animation('demo_swim.mp4')
+#     print('Water')
+#     env = Worm(dt=0.00005, bT=5.2e3, bII=5.2e3/1.5) # You can calculate faster with less accurate result by increasing dt.
+#     for _ in range(env.n_snapshot):
+#         env.act = 0.5 * np.cos(2 * np.pi * (0.667 * np.linspace(0, 1, env.n - 1) - env.t / 0.4))
+#         env.steps()
+#     env.plot_overview()
+#     env.plot_speed_graph()
+#     env.play_animation()
+# #     env.save_animation('demo_swim.mp4')
 

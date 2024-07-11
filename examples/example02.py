@@ -2,14 +2,14 @@ from elegansbot import Worm, set_bbox_inches_tight
 import numpy as np
 import matplotlib.pyplot as plt
 
-# kymogram
+# Kymogram
 fps = 30
 kymogram = np.zeros((fps*5, 24))
 for i in range(kymogram.shape[0]):
     t = (1/fps) * i
     kymogram[i] = 0.5 * np.cos(2 * np.pi * (1.832 * np.linspace(0, 1, 24) - t / 1.6))
 
-# kymogram figure
+# Kymogram figure
 matrix = kymogram.transpose()
 shape = np.shape(matrix)
 

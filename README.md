@@ -37,7 +37,7 @@ https://github.com/TaegonChung/elegansbot/assets/29942136/ca554471-4397-4e19-bbf
 2. Use `from elegansbot import Worm` to import the library.
 3. Refer to the detailed instructions in the docstring of the "Worm" class. Below is a brief overview of potential use-cases:
     - If you want to determine $\theta_{\mathrm{ctrl}}$ dynamically, it's advised to update "act" (equivalent to theta_ctrl) manually and then invoke the "steps" method on an instance of the "Worm" class.
-    - If you wish to use ElegansBot with a pre-determined $\theta_{\mathrm{ctrl}}$ (kymogram), it's recommended to utilize the "run" method of an instance of the "Worm" class.
+    - If you wish to use ElegansBot with a pre-determined $\theta_{\mathrm{ctrl}}$ (Kymogram), it's recommended to utilize the "run" method of an instance of the "Worm" class.
 
 ## Examples
 You may want to check out examples in the "examples/" directory.  
