@@ -1,36 +1,21 @@
-from elegansbot import Worm, set_bbox_inches_tight
+import utils
+from utils.plots import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-class Kymogram(object):
-    def __init__(self, sim_time=5):
-        self.fps = 30
-        self.timestamps = self.fps * sim_time
-        self.n_rods = 25
-        self.kymogram = np.zeros([self.timestamps, self.n_rods - 1])
-        self.nu = 1.832 * np.ones(self.n_rods - 1)
-        self.omega = - 2 * np.pi / 1.16 * np.ones(self.n_rods - 1)
-        self.A = 0.5 * np.ones(self.n_rods - 1)
-        self.phi = self.phi_forward()
-
-    def phi_forward(self):
-        return 2 * np.pi * self.nu * (np.arange(self.n_rods - 1) / (self.n_rods - 2))
-
-    def forward(self, t):
-        return self.A * np.cos(self.omega * t + self.phi)
-
-
 #%%
 # Kymogram
-K = Kymogram(sim_time=5)
+K = utils.Kymogram(sim_time=5)
 kymo = np.zeros((K.timestamps, K.n_rods - 1))
 for i in range(K.timestamps):
     t = (1 / K.fps) * i
     K.kymogram[i] = K.forward(t)
-    if t == 2:
-        K.phi = K.phi - 2 * K.omega * t
-        K.omega = - K.omega
+    if 1 < t < 3:
+        K.omega_modification(K.omega - K.omega * 2 / K.fps, t)
+    # if t == 3:
+    #     K.omega_modification(-K.omega, t)
+    # if t == 1:
+    #     K.omega_modification(K.omega/3, t)
 
 # Kymogram figure
 matrix = K.kymogram.transpose()
@@ -57,12 +42,12 @@ plt.show()
 # %%
 
 # ElegansBot Simulation
-env = Worm(scale_friction=0.01)
+env = utils.Worm(scale_friction=0.01)
 env.run(K.kymogram, 1 / K.fps)
 
 # env.plot_overview()
-# env.plot_speed_graph()
+plot_speed_graph(env)
 # %matplotlib notebook # uncomment this line if the code runs in jupyter-notebook.
-env.play_animation(speed_playback=0.5)
+play_animation(env, speed_playback=0.5)
 # %matplotlib inline # uncomment this if it's in jupyter-notebook.
 # env.save_animation('demo.mp4') # FFMPEG is required for saving animation.
