@@ -6,21 +6,21 @@ import matplotlib.pyplot as plt
 #%%
 # Kymogram
 K = utils.Kymogram(sim_time=5)
-initial_omega = K.omega
-for i in K.timestamps:
-    K.kymogram[i] = K.step(i)
-    # if i == 30 or i == 33 or i == 36 or i == 39:
-    #     K.omega_modification(K.omega - 1, i)
-    #     print("slowing")
-    if 30 < i < 40 and i % 2:
-        K.omega_modification(K.omega - 0.1 * initial_omega, i)
-        print(K.omega)
+beg_turn = []
+end_turn = []
+for i in range(K.n_timestamps):
+    if i == 40:
+        K.turn[i, 0] = 1
     if i == 60:
-        K.omega_modification(-K.omega, i)
-        print("reverse")
-    if i == 100:
-        K.omega_modification(-K.omega * 120 / 100, i)
-        print("forward faster")
+        K.turn[i, 0] = 0
+    K.kymogram[i] = K.step(i)
+    beg_turn.append(K.begin_turn_position)
+    end_turn.append(K.end_turn_position)
+
+#%%
+fig, ax = plt.subplots()
+ax.plot(np.arange(K.n_timestamps), beg_turn)
+ax.plot(np.arange(K.n_timestamps), end_turn)
 
 #%%
 # Kymogram figure
@@ -52,7 +52,7 @@ env = utils.Worm(scale_friction=0.01)
 env.run(K.kymogram, 1 / K.fps)
 
 # env.plot_overview()
-plot_speed_graph(env)
+# plot_speed_graph(env)
 # %matplotlib notebook # uncomment this line if the code runs in jupyter-notebook.
 play_animation(env, speed_playback=0.5)
 # %matplotlib inline # uncomment this if it's in jupyter-notebook.
