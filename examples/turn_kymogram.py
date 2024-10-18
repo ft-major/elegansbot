@@ -11,8 +11,10 @@ end_turn = []
 for i in range(K.n_timestamps):
     if i == 40:
         K.turn[i, 0] = 1
-    if i == 60:
+    if i == 70:
         K.turn[i, 0] = 0
+    if i == 80:
+        K.omega_modification(-K.omega, i)
     K.kymogram[i] = K.step(i)
     beg_turn.append(K.begin_turn_position)
     end_turn.append(K.end_turn_position)

@@ -29,31 +29,38 @@ class Kymogram(object):
         self.phi[rod] -= self.omega * self.dt
 
     def step(self, timestamp):
+        # checking if it is performing a turn
         if np.any(self.turn[timestamp, :]):
-            for joint in np.arange(self.n_rods - 1):
-                if self.turn[timestamp, joint] == 1:
-                    self.phi_turn(joint)
-                if joint == 0:
-                    if self.turn[timestamp, joint] != self.turn[timestamp - 1, joint]:
-                        if self.turn[timestamp, joint] == 1:
-                            self.begin_turn_position = 0
-                        elif self.turn[timestamp, joint] == 0:
+            for j in np.arange(self.n_rods - 1):
+                # keeping the j-th joint in order to perform the turn
+                if self.turn[timestamp, j] == 1:
+                    self.phi_turn(j)
+                # checking if the head is beginning or ending a turn
+                if j == 0:
+                    if self.turn[timestamp, j] != self.turn[timestamp - 1, j]:
+                        if self.turn[timestamp, j] == 1:
+                            # starting the turn if it is not due to a reverse close to a turn
+                            if self.end_turn_position >= self.n_rods - 1:
+                                self.begin_turn_position = 0
+                        elif self.turn[timestamp, j] == 0:
+                            # ending the turn
                             self.end_turn_position = 0
-                elif joint == self.n_rods - 2:
-                    if self.turn[timestamp, joint] != self.turn[timestamp - 1, joint]:
-                        if self.turn[timestamp, joint] == 1:
-                            self.begin_turn_position = self.n_rods - 1
-                        elif self.turn[timestamp, joint] == 0:
-                            self.end_turn_position = self.n_rods - 1
+
+            # propagating the beginning of the turn
+            self.begin_turn_position += self.turn_propagation
+            # checking if the turn has propagated through the whole body
             if self.begin_turn_position < self.n_rods - 1:
-                self.begin_turn_position += self.turn_propagation
                 for i in range(0, int(np.rint(self.begin_turn_position)) + 1):
                     self.turn[timestamp + 1, i] = 1
             else:
+                # if the turn has propagated to the tail, it has to wait that also the end of the turn propagates
+                # till the end
                 if self.end_turn_position < self.n_rods - 1:
                     self.turn[timestamp + 1, :] = 1
+            # propagating the end of the turn
+            self.end_turn_position += self.turn_propagation
+            # checking if the end of the turn has propagated to the tail
             if self.end_turn_position < self.n_rods - 1:
-                self.end_turn_position += self.turn_propagation
                 for i in range(0, int(np.rint(self.end_turn_position)) + 1):
                     self.turn[timestamp + 1, i] = 0
         return self.A * np.cos(self.omega * self.t[timestamp] + self.phi)
