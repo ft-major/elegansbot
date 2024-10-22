@@ -66,7 +66,8 @@ class Kymogram(object):
             self.end_turn_position += self.turn_propagation
             # checking if the end of the turn has propagated to the tail
             if self.end_turn_position < self.n_rods - 1:
-                for i in range(0, int(np.rint(self.end_turn_position)) + 1):
+                range_max = min(self.n_rods-2, int(np.rint(self.end_turn_position)) + 1)
+                for i in range(0, range_max):
                     self.turn[timestamp + 1, i] = 0
         self.kymogram[timestamp] = self.A * np.cos(self.omega * self.t[timestamp] + self.phi)
 
@@ -77,7 +78,7 @@ class Kymogram(object):
 
     def motor_command(self, timestamp, action=None):
         if action not in self.actions:
-            print("action ", action, " not defined. doing a forward step")
+            # print("action ", action, " not defined. doing a forward step")
             action = "forward"
         if action == "forward":
             self.omega_modification(self.initial_omega, timestamp)
