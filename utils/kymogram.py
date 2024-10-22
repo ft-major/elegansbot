@@ -2,21 +2,25 @@ import numpy as np
 
 
 class Kymogram(object):
-    def __init__(self, sim_time=5):
-        self.fps = 30
-        self.n_timestamps = self.fps * sim_time
+    def __init__(self, sim_time=5, fps=30):
+        self.simTime = sim_time
+        self.fps = fps
+        self.n_timestamps = int(self.fps * sim_time) + 1
         self.timestamps = np.arange(0, self.n_timestamps)
         self.t = np.linspace(0, sim_time, self.n_timestamps)
         self.n_rods = 25
         self.kymogram = np.zeros([self.n_timestamps, self.n_rods - 1])
         self.nu = 1.832  # * np.ones(self.n_rods - 1)
         self.omega = - 2 * np.pi / 1.16  # * np.ones(self.n_rods - 1)
-        self.A = 0.5  # * np.ones(self.n_rods - 1)
+        self.initial_omega = self.omega
+        self.slowing_rate = self.initial_omega * 0.1
+        self.A = 0.7  # * np.ones(self.n_rods - 1)
         self.phi = self.phi_forward()
         self.turn = np.zeros([self.n_timestamps, self.n_rods - 1])
         self.turn_propagation = (self.omega * self.dt) / (self.phi[0] - self.phi[1])
         self.begin_turn_position = self.n_rods - 1
         self.end_turn_position = self.n_rods - 1
+        self.actions = ["forward", "reverse", "slowing", "turn"]
 
     @property
     def dt(self):
@@ -50,7 +54,8 @@ class Kymogram(object):
             self.begin_turn_position += self.turn_propagation
             # checking if the turn has propagated through the whole body
             if self.begin_turn_position < self.n_rods - 1:
-                for i in range(0, int(np.rint(self.begin_turn_position)) + 1):
+                range_max = min(self.n_rods-2, int(np.rint(self.begin_turn_position)) + 1)
+                for i in range(0, range_max):
                     self.turn[timestamp + 1, i] = 1
             else:
                 # if the turn has propagated to the tail, it has to wait that also the end of the turn propagates
@@ -63,9 +68,27 @@ class Kymogram(object):
             if self.end_turn_position < self.n_rods - 1:
                 for i in range(0, int(np.rint(self.end_turn_position)) + 1):
                     self.turn[timestamp + 1, i] = 0
-        return self.A * np.cos(self.omega * self.t[timestamp] + self.phi)
+        self.kymogram[timestamp] = self.A * np.cos(self.omega * self.t[timestamp] + self.phi)
 
     def omega_modification(self, new_omega, timestamp):
         self.phi += (self.omega - new_omega) * self.t[timestamp]
         self.turn_propagation *= self.omega / new_omega
         self.omega = new_omega
+
+    def motor_command(self, timestamp, action=None):
+        if action not in self.actions:
+            print("action ", action, " not defined. doing a forward step")
+            action = "forward"
+        if action == "forward":
+            self.omega_modification(self.initial_omega, timestamp)
+        if action == "reverse":
+            self.omega_modification(-self.initial_omega, timestamp)
+        if action == "slowing":
+            if self.omega != self.initial_omega/2:
+                self.omega_modification(self.initial_omega / 2, timestamp)
+        if action == "turn":
+            self.turn[timestamp, 0] = 1
+        else:
+            if self.turn[timestamp - 1, 0] == 1:
+                self.turn[timestamp, 0] = 0
+        self.step(timestamp)

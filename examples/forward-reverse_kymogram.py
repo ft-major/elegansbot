@@ -1,49 +1,25 @@
 import utils
 from utils.plots import *
 import numpy as np
-import matplotlib.pyplot as plt
 
 #%%
 # Kymogram
-K = utils.Kymogram(sim_time=5)
-initial_omega = K.omega
+K = utils.Kymogram(sim_time=20)
 for i in K.timestamps:
-    K.kymogram[i] = K.step(i)
-    # if i == 30 or i == 33 or i == 36 or i == 39:
-    #     K.omega_modification(K.omega - 1, i)
-    #     print("slowing")
-    if 30 < i < 40 and i % 2:
-        K.omega_modification(K.omega - 0.1 * initial_omega, i)
-        print(K.omega)
-    if i == 60:
+    K.step(i)
+    if 60 < i < 80 and i % 2:
+        K.omega_modification(K.omega - 0.05 * K.initial_omega, i)
+        print("slowing", i)
+    if i == 120:
         K.omega_modification(-K.omega, i)
-        print("reverse")
-    if i == 100:
+        print("reverse", i)
+    if i == 200:
         K.omega_modification(-K.omega * 120 / 100, i)
-        print("forward faster")
+        print("forward faster", i)
 
 #%%
 # Kymogram figure
-matrix = K.kymogram.transpose()
-shape = np.shape(matrix)
-
-fig, ax = plt.subplots(dpi=120)
-im = ax.imshow(matrix, aspect=.3 * (shape[1] / shape[0]), cmap='bwr')
-ax.set_title('Kymogram')
-ax.set_xlabel('frame number')
-ax.set_ylabel('body position')
-ax.set_yticks([0, shape[0] - 1])
-ax.set_yticklabels(['head', 'tail'])
-
-[l, b, w, h] = ax.get_position().bounds
-cbound = [l + w * 1.05, b, w * 0.05, h]
-cax = fig.add_axes(cbound)
-cbar = fig.colorbar(im, ax=ax, cax=cax)
-cax.set_title('dorsal', fontsize=8)
-cax.set_xlabel('ventral', fontsize=8)
-
-set_bbox_inches_tight(fig)
-plt.show()
+plot_kymogram(K.kymogram)
 
 # %%
 

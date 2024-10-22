@@ -365,3 +365,26 @@ def plot_speed_graph(env, dpi=80):
     set_bbox_inches_tight(fig)
     plt.show()
     print(f"average worm speed: {np.mean(speed_log):.5f} (mm/sec)")
+
+
+def plot_kymogram(K):
+    matrix = K.transpose()
+    shape = np.shape(matrix)
+
+    fig, ax = plt.subplots(dpi=120)
+    im = ax.imshow(matrix, aspect=.3 * (shape[1] / shape[0]), cmap='bwr')
+    ax.set_title('Kymogram')
+    ax.set_xlabel('frame number')
+    ax.set_ylabel('body position')
+    ax.set_yticks([0, shape[0] - 1])
+    ax.set_yticklabels(['head', 'tail'])
+
+    [l, b, w, h] = ax.get_position().bounds
+    cbound = [l + w * 1.05, b, w * 0.05, h]
+    cax = fig.add_axes(cbound)
+    cbar = fig.colorbar(im, ax=ax, cax=cax)
+    cax.set_title('dorsal', fontsize=8)
+    cax.set_xlabel('ventral', fontsize=8)
+
+    set_bbox_inches_tight(fig)
+    plt.show()
