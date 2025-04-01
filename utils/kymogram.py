@@ -85,8 +85,12 @@ class Kymogram(object):
         if action == "reverse":
             self.omega_modification(-self.initial_omega, timestamp)
         if action == "slowing":
-            if self.omega != self.initial_omega/2:
-                self.omega_modification(self.initial_omega / 2, timestamp)
+            if np.absolute(self.omega) != np.absolute(self.initial_omega/2):
+                actual_sign = np.sign(self.omega)
+                if actual_sign != np.sign(self.initial_omega):
+                    self.omega_modification(- self.initial_omega / 2, timestamp)
+                else:
+                    self.omega_modification(self.initial_omega / 2, timestamp)
         if action == "turn":
             self.turn[timestamp, 0] = 1
         else:

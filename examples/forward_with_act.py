@@ -4,7 +4,7 @@ import numpy as np
 
 #%%
 print('Agar plate')
-env = utils.Worm(dt=0.00005) # Numba JIT spends compile-time here, once.
+env = utils.Worm(dt=0.00005, simTime=10) # Numba JIT spends compile-time here, once.
 for _ in range(env.n_snapshot):
     env.act = 0.7 * np.cos(2 * np.pi * (1.832 * np.linspace(0, 1, env.n - 1) - env.t / 1.6))
     env.steps()

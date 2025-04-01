@@ -55,6 +55,7 @@ def plot_outline_n_trajectory(
         show_legend=True,
         init_fig=False,
         dpi=None,
+        motor_command=None
 ):
     """
     Drawing single snapshot image
@@ -115,6 +116,9 @@ def plot_outline_n_trajectory(
         ax.lines[5].set_data(track_head[:, 0], track_head[:, 1])
         ax.lines[6].set_data(track_tail[:, 0], track_tail[:, 1])
         ax.texts[0].set_text(f'Time: {time:.3f} (sec)')
+        if motor_command is not None:
+            nl_text = "\n" + motor_command
+            ax.texts[1].set_text(f'Motor command:{nl_text}')
 
         if draw == True:
             fig.canvas.draw()
@@ -142,6 +146,9 @@ def plot_outline_n_trajectory(
         ax.plot(track_tail[:, 0], track_tail[:, 1], '-',
                 color=[0, .5, 1], linewidth=lw / 2, label="Tail track")
         ax.text(left + 0.1, bottom + 0.1, f'Time: {time:.3f} (sec)')
+        if motor_command is not None:
+            nl_text = "\n" + motor_command
+            ax.text(left + 0.1, bottom + 0.6, f'Motor command:{nl_text}')
         ax.set_xlabel("x (mm)")
         ax.set_ylabel("y (mm)")
         if show_legend == True:
@@ -157,6 +164,7 @@ def play_animation(
         dpi=120,
         bbox_inches_tight=True,
         ax=None,
+        motor_command=None
 ):
     """
     Playing animation of worm's movement from the records.
@@ -189,7 +197,10 @@ def play_animation(
     if not (running_in_notebook):
         plt.show()
 
-    func_plot(ax, 0, env, draw=True)
+    if motor_command is not None:
+        func_plot(ax, 0, env, draw=True, motor_command="")
+    else:
+        func_plot(ax, 0, env, draw=True)
 
     if bbox_inches_tight == True:
         set_bbox_inches_tight(fig)
@@ -204,7 +215,7 @@ def play_animation(
             i += step
             if i >= env.n_snapshot:
                 break
-            func_plot(ax, i, env, draw=True)
+            func_plot(ax, i, env, draw=True, motor_command=motor_command[i])
             if not (running_in_notebook):
                 fig.canvas.flush_events()
             delay -= step * dt
@@ -230,6 +241,7 @@ def save_animation(
         bbox_inches_tight=True,
         func_plot=plot_outline_n_trajectory,  # drawing function
         ax=None,
+        motor_command=None
 ):
     """
     Saving animation of worm's movement into MP4 video file.
@@ -274,6 +286,7 @@ def save_animation(
         step = int(delay / dt)
         delay -= step * dt
         i += step
+        # func_plot(ax, i, env, draw=True, motor_command=motor_command[i])
         if i < env.n_snapshot - 1:
             idx_.append(i)
         else:
@@ -281,7 +294,7 @@ def save_animation(
             break
 
     def update(i):
-        return func_plot(ax, idx_[i], env)
+        return func_plot(ax, idx_[i], env, draw=True, motor_command=motor_command[idx_[i]])
 
     anim = mpl_animation.FuncAnimation(
         fig,
