@@ -152,6 +152,28 @@ def plot_outline_n_trajectory(
 
     return ax.lines + ax.texts
 
+# %%
+def plot_kymogram(K):
+    matrix = K.transpose()
+    shape = np.shape(matrix)
+
+    fig, ax = plt.subplots(dpi=120)
+    im = ax.imshow(matrix, aspect=.3 * (shape[1] / shape[0]), cmap='bwr')
+    ax.set_title('Kymogram')
+    ax.set_xlabel('frame number')
+    ax.set_ylabel('body position')
+    ax.set_yticks([0, shape[0] - 1])
+    ax.set_yticklabels(['head', 'tail'])
+
+    [l, b, w, h] = ax.get_position().bounds
+    cbound = [l + w * 1.05, b, w * 0.05, h]
+    cax = fig.add_axes(cbound)
+    cbar = fig.colorbar(im, ax=ax, cax=cax)
+    cax.set_title('dorsal', fontsize=8)
+    cax.set_xlabel('ventral', fontsize=8)
+
+    set_bbox_inches_tight(fig)
+    plt.show()
 
 # %%
 @njit(fastmath=True, cache=True) # enables all fast-math flags of llvm
@@ -840,7 +862,7 @@ class Worm:
         return self.__xy_tip_log
     
     def play_animation(
-        env,
+        self,
         func_plot=plot_outline_n_trajectory,  # drawing function
         speed_playback=1,
         dpi=120,
@@ -864,7 +886,7 @@ class Worm:
         """
 
         assert speed_playback > 0
-        dt = env.dt_snapshot / speed_playback
+        dt = self.dt_snapshot / speed_playback
 
         running_in_notebook = is_notebook()
         if not(running_in_notebook):
@@ -873,27 +895,27 @@ class Worm:
         if type(ax) != type(None):
             fig = ax.get_figure()
         else:
-            fig, ax = func_plot(None, 0, env, init_fig=True, dpi=dpi)
+            fig, ax = func_plot(None, 0, self, init_fig=True, dpi=dpi)
 
         if not(running_in_notebook):
             plt.show()
 
-        func_plot(ax, 0, env, draw=True)
+        func_plot(ax, 0, self, draw=True)
 
         if bbox_inches_tight == True:
             set_bbox_inches_tight(fig)
 
         i = 0
         delay = 0
-        func_plot(ax, i, env, draw=True)
+        func_plot(ax, i, self, draw=True)
         while True:
             tmp = time.time()
             step = int(delay/dt)
             if step > 0:
                 i += step
-                if i >= env.n_snapshot:
+                if i >= self.n_snapshot:
                     break
-                func_plot(ax, i, env, draw=True)
+                func_plot(ax, i, self, draw=True)
                 if not(running_in_notebook):
                     fig.canvas.flush_events()
                 delay -= step*dt
@@ -901,7 +923,7 @@ class Worm:
                 time.sleep(dt/10)
             delay += time.time()-tmp
 
-        func_plot(ax, env.n_snapshot-1, env, draw=True)
+        func_plot(ax, self.n_snapshot-1, self, draw=True)
 
         if not(running_in_notebook):
             plt.ioff()
@@ -910,7 +932,7 @@ class Worm:
             plt.close(fig)
 
     def save_animation(
-        env,
+        self,
         file_name="animation.mp4",
         speed_playback=1,
         dpi=120,
@@ -933,7 +955,7 @@ class Worm:
         env.save_animation(file_name=f"example.mp4")
         """
         assert speed_playback > 0
-        dt = env.dt_snapshot / speed_playback
+        dt = self.dt_snapshot / speed_playback
 
         running_in_notebook = is_notebook()
         if not(running_in_notebook):
@@ -942,15 +964,15 @@ class Worm:
         if type(ax) != type(None):
             fig = ax.get_figure()
         else:
-            fig, ax = func_plot(None, 0, env, init_fig=True, dpi=dpi)
+            fig, ax = func_plot(None, 0, self, init_fig=True, dpi=dpi)
 
-        func_plot(ax, 0, env) # Drawing object(line, text, ...) initialization
+        func_plot(ax, 0, self) # Drawing object(line, text, ...) initialization
 
         if bbox_inches_tight == True:
             set_bbox_inches_tight(fig)
 
         def init(): # Video initialization
-            return func_plot(ax, 0, env)
+            return func_plot(ax, 0, self)
 
         idx_ = [0]
         i = 0
@@ -962,14 +984,14 @@ class Worm:
             step = int(delay / dt)
             delay -= step * dt
             i += step
-            if i < env.n_snapshot-1:
+            if i < self.n_snapshot-1:
                 idx_.append(i)
             else:
-                idx_.append(env.n_snapshot-1)
+                idx_.append(self.n_snapshot-1)
                 break
                 
         def update(i):
-            return func_plot(ax, idx_[i], env)
+            return func_plot(ax, idx_[i], self)
 
         anim = mpl_animation.FuncAnimation(
             fig,
@@ -982,12 +1004,12 @@ class Worm:
         anim.save(file_name)
         plt.close(fig)
 
-    def plot_overview(env, n_row=6, dpi=80):
+    def plot_overview(self, n_row=6, dpi=80):
         """
         Plotting overview of worm's trajectory
         """
 
-        xy_tip_log = env.xy_tip_log
+        xy_tip_log = self.xy_tip_log
         left = np.min(xy_tip_log[:, 0, :], axis=None) - 0.5
         right = np.max(xy_tip_log[:, 0, :], axis=None) + 0.5
         top = np.max(xy_tip_log[:, 1, :], axis=None) + 0.5
@@ -1002,12 +1024,12 @@ class Worm:
             figsize=(5, n_row * 2),
         )
 
-        for i, idx in enumerate(np.linspace(0, env.n_snapshot-1, n_row).astype(int)):
+        for i, idx in enumerate(np.linspace(0, self.n_snapshot-1, n_row).astype(int)):
             ax = ax_[i]
             if i == 0:
-                plot_outline_n_trajectory(ax, idx, env, show_legend=True)
+                plot_outline_n_trajectory(ax, idx, self, show_legend=True)
             else:
-                plot_outline_n_trajectory(ax, idx, env, show_legend=False)
+                plot_outline_n_trajectory(ax, idx, self, show_legend=False)
 
             if i < n_row - 1:
                 ax_[i].set_xticklabels([])
@@ -1023,7 +1045,7 @@ class Worm:
         set_bbox_inches_tight(fig)
         plt.show()
 
-    def plot_speed_graph(env, dpi=80):
+    def plot_speed_graph(self, dpi=80):
         """
         Plot speed graph
 
@@ -1032,8 +1054,8 @@ class Worm:
         -------------
         env.velocity_graph()
         """
-        t_log = env.t_log
-        vc_log = env.vc_log
+        t_log = self.t_log
+        vc_log = self.vc_log
 
         speed_log = np.sqrt((vc_log**2).sum(axis=-1))
         fig, ax = plt.subplots(figsize=(8, 4), dpi=dpi)
