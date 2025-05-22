@@ -110,7 +110,7 @@ def plot_outline_n_trajectory(
     x_ventral, y_ventral = x_tip-dx, y_tip-dy
 
     if ax.lines:
-        ax.lines[0].set_data(x_tip[0], y_tip[0])
+        ax.lines[0].set_data((x_tip[0],), (y_tip[0],))
         ax.lines[1].set_data(x_dorsal, y_dorsal)
         ax.lines[2].set_data(x_ventral, y_ventral)
         ax.lines[3].set_data([x_dorsal[0], x_ventral[0]], [y_dorsal[0], y_ventral[0]])
