@@ -772,10 +772,10 @@ def plot_heatmap_rod_force(env, f_s_max=None, i_snapshot_arrow_=None, fixed_yxra
 # %%
 try:
     env = Worm()
-    env.load('env_omega-turn')
+    env.load('examples/env_omega-turn')
 except:
     env = Worm(scale_friction=.01, angle_init=2*np.pi*(.43))
-    theta_t_ = np.load('kymogram_omega-turn.npy')
+    theta_t_ = np.load('examples/kymogram_omega-turn.npy')
     env.run(theta_t_, dt=1/32)
     env.save('env_omega-turn')
 
