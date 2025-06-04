@@ -775,9 +775,9 @@ try:
     env.load('examples/env_omega-turn')
 except:
     env = Worm(scale_friction=.01, angle_init=2*np.pi*(.43))
-    theta_t_ = np.load('examples/kymogram_omega-turn.npy')
+    theta_t_ = np.load('elegansbot/examples/kymogram_omega-turn.npy')
     env.run(theta_t_, dt=1/32)
-    env.save('env_omega-turn')
+    # env.save('env_omega-turn')
 
 env.plot_overview()
 
@@ -793,9 +793,9 @@ try:
     env.load('env_delta-turn')
 except:
     env = Worm(scale_friction=.01, angle_init=2*np.pi*(-.015), polarity_clockwise=True)
-    theta_t_ = np.load('kymogram_delta-turn.npy')
+    theta_t_ = np.load('elegansbot/examples/kymogram_delta-turn.npy')
     env.run(theta_t_, dt=1/32)
-    env.save('env_delta-turn')
+    # env.save('env_delta-turn')
 
 env.plot_overview()
 
